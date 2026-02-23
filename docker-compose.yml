@@ -1,0 +1,96 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: oneshot_db
+    environment:
+      POSTGRES_DB: oneshot
+      POSTGRES_USER: oneshot_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-oneshot_password}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - oneshot_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U oneshot_user -d oneshot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Apache PHP Application
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: oneshot_web
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/var/www/html
+      - php_uploads:/var/www/html/uploads
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=oneshot
+      - DB_USER=oneshot_user
+      - DB_PASS=${DB_PASSWORD:-oneshot_password}
+      - APP_ENV=production
+      - APP_DEBUG=false
+    networks:
+      - oneshot_network
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Migration Service (runs once on startup)
+  migration:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: oneshot_migration
+    command: ["php", "/var/www/html/migrations/migrate.php", "migrate"]
+    volumes:
+      - ./:/var/www/html
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=oneshot
+      - DB_USER=oneshot_user
+      - DB_PASS=${DB_PASSWORD:-oneshot_password}
+    networks:
+      - oneshot_network
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  # Optional: Adminer for database management
+  adminer:
+    image: adminer:latest
+    container_name: oneshot_adminer
+    ports:
+      - "8081:8080"
+    networks:
+      - oneshot_network
+    depends_on:
+      - db
+    restart: unless-stopped
+    profiles:
+      - dev
+
+networks:
+  oneshot_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
+  php_uploads:
+    driver: local

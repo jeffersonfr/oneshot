@@ -1,0 +1,42 @@
+-- Running migrations
+
+	# Show all available commands
+	make help
+
+	# Check migration status
+	make status
+
+	# Run all pending migrations
+	make migrate
+
+	# Rollback last migration
+	make rollback
+
+	# Rollback 3 migrations
+	make rollback n=3
+
+	# Rollback all migrations
+	make reset
+
+	# Reset and re-run all migrations
+	make refresh
+
+	# Create a new migration
+	make create-migration name=add_new_feature
+
+	# Open database shell
+	make db-shell
+
+-- Docker compose profiles
+
+	# Start in production mode (without adminer)
+	docker-compose up -d
+
+	# Start in development mode (with adminer)
+	docker-compose --profile dev up -d
+
+	# Run migrations manually
+	docker-compose run --rm migration
+
+	# View migration logs
+	docker-compose logs migration
