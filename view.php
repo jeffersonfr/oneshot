@@ -93,7 +93,6 @@ if ($content !== null) {
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -112,7 +111,7 @@ if ($content !== null) {
         }
         
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #92a0e0 0%, #151724 100%);
             color: white;
             padding: 40px;
         }
@@ -144,7 +143,7 @@ if ($content !== null) {
         
         .btn {
             display: inline-block;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #92a0e0 0%, #151724 100%);
             color: white;
             text-decoration: none;
             padding: 15px 40px;
