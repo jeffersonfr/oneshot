@@ -149,10 +149,12 @@ elseif ($_SERVER['REQUEST_METHOD'] === 'GET' && !empty($uuid)) {
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>🔒 OneShot</h1>
-        </div>
-        
+        <a href="/">
+            <div class="header">
+                <h1>🔒 OneShot</h1>
+            </div>
+        </a>
+
         <div class="content">
             <?php if ($error): ?>
                 <div class="error-message">

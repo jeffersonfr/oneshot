@@ -92,10 +92,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['file'])) {
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>🔒 OneShot</h1>
-            <p>Share files securely - they self-destruct after first view</p>
-        </div>
+        <a href="/">
+            <div class="header">
+                <h1>🔒 OneShot</h1>
+                <p>Share files securely - they self-destruct after first view</p>
+            </div>
+        </a>
         
         <div class="content">
             <?php if ($message): ?>
