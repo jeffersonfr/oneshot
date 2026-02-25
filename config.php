@@ -15,6 +15,10 @@ define('DB_USER', 'oneshot_user');
 define('DB_PASS', 'oneshot_password'); // Change this in production!
 define('DB_SSL_MODE', 'disable');
 
+// config.php (add near other defines)
+define('MAX_PASSWORD_ATTEMPTS', 3);
+define('LOCKOUT_DURATION', 3600); // 1 hour in seconds
+
 // Create uploads directory if it doesn't exist
 if (!file_exists(UPLOAD_DIR)) {
     mkdir(UPLOAD_DIR, 0755, true);

@@ -11,7 +11,8 @@ try {
     foreach ($oldItems as $item) {
         // Delete file if it exists
         if (file_exists($item['file_path'])) {
-            unlink($item['file_path']);
+            // unlink($item['file_path']);
+            secureDelete($item['file_path']);
         }
         
         // Mark as destroyed
@@ -22,5 +23,36 @@ try {
     echo "Cleanup completed. Removed " . count($oldItems) . " expired files.\n";
 } catch (Exception $e) {
     echo "Error during cleanup: " . $e->getMessage() . "\n";
+}
+
+function secureDelete($filepath, $passes = 1) {
+    if (!file_exists($filepath)) {
+        return false;
+    }
+    
+    $size = filesize($filepath);
+    $fp = fopen($filepath, 'r+');
+    
+    if (!$fp) {
+        return false;
+    }
+    
+    // Sobrescreve com padrões aleatórios
+    for ($pass = 0; $pass < $passes; $pass++) {
+        fseek($fp, 0);
+        $data = random_bytes($size);
+        fwrite($fp, $data);
+        fflush($fp);
+    }
+    
+    // Passada final com zeros
+    fseek($fp, 0);
+    fwrite($fp, str_repeat("\0", $size));
+    fflush($fp);
+    
+    fclose($fp);
+    
+    // Remove o arquivo
+    return unlink($filepath);
 }
 ?>

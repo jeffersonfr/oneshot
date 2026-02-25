@@ -37,18 +37,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['file'])) {
                 if (move_uploaded_file($file['tmp_name'], $filePath)) {
                     // Save to database
                     try {
-                        $stmt = $pdo->prepare("INSERT INTO shared_items (uuid, filename, original_name, file_path, file_type, file_size, mime_type) 
-                                              VALUES (?, ?, ?, ?, ?, ?, ?)");
-                        $stmt->execute([
-                            $uuid,
-                            $uniqueFilename,
-                            $sanitizedFilename,
-                            $filePath,
-                            $fileType,
-                            $file['size'],
-                            $file['type']
-                        ]);
-                        
+			// Inside the upload handling block, after file validation
+			$password = $_POST['password'] ?? '';
+			$passwordHash = null;
+			if (!empty($password)) {
+				$passwordHash = password_hash($password, PASSWORD_DEFAULT);
+			}
+
+			// Then in the INSERT statement, add password_hash
+			$stmt = $pdo->prepare("INSERT INTO shared_items (uuid, filename, original_name, file_path, file_type, file_size, mime_type, password_hash) 
+						    VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+			$stmt->execute([
+			$uuid,
+			$uniqueFilename,
+			$sanitizedFilename,
+			$filePath,
+			$fileType,
+			$file['size'],
+			$file['type'],
+			$passwordHash
+			]);
+
                         $shareLink = (isset($_SERVER['HTTPS']) ? 'https://' : 'http://') . 
                                     $_SERVER['HTTP_HOST'] . 
                                     dirname($_SERVER['SCRIPT_NAME']) . 
@@ -79,219 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['file'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OneShot - Self-Destructing File Sharing</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 600px;
-            width: 100%;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            overflow: hidden;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, #92a0e0 0%, #151724 100%);
-            color: white;
-            padding: 40px;
-            text-align: center;
-        }
-        
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-        
-        .header p {
-            opacity: 0.9;
-            font-size: 1.1em;
-        }
-        
-        .content {
-            padding: 40px;
-        }
-        
-        .upload-area {
-            border: 2px dashed #ddd;
-            border-radius: 10px;
-            padding: 40px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-bottom: 20px;
-        }
-        
-        .upload-area:hover,
-        .upload-area.dragover {
-            border-color: #667eea;
-            background: #f8f9ff;
-        }
-        
-        .upload-area i {
-            font-size: 48px;
-            color: #667eea;
-            margin-bottom: 15px;
-            display: block;
-        }
-        
-        .upload-area h3 {
-            color: #333;
-            margin-bottom: 10px;
-        }
-        
-        .upload-area p {
-            color: #666;
-            font-size: 0.9em;
-        }
-        
-        .file-info {
-            margin-top: 15px;
-            color: #667eea;
-            font-weight: 500;
-        }
-        
-        .btn {
-            background: linear-gradient(135deg, #92a0e0 0%, #151724 100%);
-            color: white;
-            border: none;
-            padding: 15px 40px;
-            border-radius: 50px;
-            font-size: 1.1em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            width: 100%;
-        }
-        
-        .btn:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
-        }
-        
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-        
-        .message {
-            padding: 15px;
-            border-radius: 10px;
-            margin: 20px 0;
-            display: none;
-        }
-        
-        .message.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-            display: block;
-        }
-        
-        .message.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-            display: block;
-        }
-        
-        .share-link {
-            background: #f8f9ff;
-            border-radius: 10px;
-            padding: 20px;
-            margin-top: 20px;
-            border: 1px solid #667eea;
-        }
-        
-        .share-link h3 {
-            color: #333;
-            margin-bottom: 10px;
-        }
-        
-        .link-container {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .link-container input {
-            flex: 1;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 0.9em;
-        }
-        
-        .copy-btn {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
-        
-        .copy-btn:hover {
-            background: #764ba2;
-        }
-        
-        .features {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            margin-top: 30px;
-            text-align: center;
-        }
-        
-        .feature {
-            padding: 20px;
-        }
-        
-        .feature i {
-            font-size: 24px;
-            color: #667eea;
-            margin-bottom: 10px;
-            display: block;
-        }
-        
-        .feature h4 {
-            color: #333;
-            margin-bottom: 5px;
-        }
-        
-        .feature p {
-            color: #666;
-            font-size: 0.85em;
-        }
-        
-        @media (max-width: 768px) {
-            .header {
-                padding: 30px;
-            }
-            
-            .content {
-                padding: 20px;
-            }
-            
-            .features {
-                grid-template-columns: 1fr;
-                gap: 10px;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
@@ -314,6 +111,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['file'])) {
                         <input type="text" id="shareLink" value="<?php echo htmlspecialchars($shareLink); ?>" readonly>
                         <button class="copy-btn" onclick="copyLink()">Copy</button>
                     </div>
+		    <?php if (!empty($password)): ?>
+		        <p style="margin-top: 10px; color: #e74c3c; font-size: 0.9em;">
+		            🔒 Password protected: The recipient will need to enter the password you set.
+		        </p>
+		    <?php endif; ?>
                     <p style="margin-top: 10px; color: #666; font-size: 0.9em;">
                         ⚠️ This link will work only once and self-destruct after viewing!
                     </p>
@@ -332,6 +134,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['file'])) {
                     <div class="file-info" id="fileInfo"></div>
                 </div>
                 
+		<div class="password-option">
+		    <label for="password">Optional Password:</label>
+		    <input type="password" name="password" id="password" placeholder="Set a password (optional)">
+		    <small>If set, recipient must enter this password to view the file.</small>
+		</div>
+
                 <button type="submit" class="btn" id="submitBtn" disabled>Upload & Generate Link</button>
             </form>
             
