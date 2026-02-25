@@ -3,9 +3,9 @@
 session_start();
 
 define('UPLOAD_DIR', '/var/www/html/uploads/');
-define('ALLOWED_IMAGES', ['jpg', 'jpeg', 'png', 'gif', 'webp']);
-define('ALLOWED_VIDEOS', ['mp4', 'webm', 'ogg', 'mov', 'avi']);
-define('ALLOWED_DOCUMENTS', ['pdf', 'doc', 'docx', 'txt', 'xls', 'xlsx', 'ppt', 'pptx']);
+define('ALLOWED_IMAGES', ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'tiff', 'tif', 'cr2', 'nef']);
+define('ALLOWED_VIDEOS', ['mp3', 'mpg', 'mp2', 'mp4', 'mpeg4', 'webm', 'ogg', 'mov', 'avi', 'wmv']);
+define('ALLOWED_DOCUMENTS', ['pdf', 'doc', 'docx', 'txt', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'zip', 'tar', 'gz']);
 
 // Database configuration for PostgreSQL
 define('DB_HOST', 'db'); // This matches the service name in docker-compose
