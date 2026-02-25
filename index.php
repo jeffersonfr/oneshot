@@ -113,7 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['file'])) {
                     </div>
 		    <?php if (!empty($password)): ?>
 		        <p style="margin-top: 10px; color: #e74c3c; font-size: 0.9em;">
-		            🔒 Password protected: The recipient will need to enter the password you set.
+		            🔒 Password protected
 		        </p>
 		    <?php endif; ?>
                     <p style="margin-top: 10px; color: #666; font-size: 0.9em;">
@@ -135,9 +135,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['file'])) {
                 </div>
                 
 		<div class="password-option">
-		    <label for="password">Optional Password:</label>
-		    <input type="password" name="password" id="password" placeholder="Set a password (optional)">
-		    <small>If set, recipient must enter this password to view the file.</small>
+		    <label for="password">Password (optional) </label>
+		    <input type="password" name="password" id="password" placeholder="optional password">
 		</div>
 
                 <button type="submit" class="btn" id="submitBtn" disabled>Upload & Generate Link</button>

@@ -64,6 +64,14 @@ body {
     margin-bottom: 20px;
 }
 
+.password-option {
+    padding: 4px 0 24px 0;
+}
+
+#password {
+	text-align: center;
+}
+
 .form-group {
     margin-bottom: 20px;
     text-align: left;
